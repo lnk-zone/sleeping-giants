@@ -1,0 +1,17 @@
+{
+  "name": "sleeping-giants",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/sg-component",
+    "services/hub",
+    "packages/shared",
+    "packages/content"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  }
+}
