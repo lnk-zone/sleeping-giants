@@ -9,5 +9,13 @@
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@sleeping-giants/shared": "workspace:*",
+    "node-html-parser": "^6.1.10",
+    "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9"
   }
 }
