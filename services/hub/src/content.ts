@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { Issue as SharedIssue } from "@sg/shared";
-import { syncBeehiiv } from "./beehiiv.js";
+import { syncBeehiiv as realSyncBeehiiv } from "./beehiiv.js";
 
 export type IssueCard = {
   issueId: string;
@@ -27,12 +27,14 @@ const repoRoot = path.resolve(__dirname, "../../..");
 const localIssuesDir = path.join(repoRoot, "packages", "content", "issues");
 const beehiivCacheFile = path.join(repoRoot, "services", "hub", "data", "sg-beehiiv.json");
 const beehiivCacheTtlMs = Number(process.env.BEEHIIV_CACHE_TTL_MS ?? 15 * 60 * 1000);
+const warmBeehiivCacheOnLoad = process.env.SG_DISABLE_BEEHIIV_WARMUP === "1" ? false : true;
 
 let cachedLocal: Issue[] | null = null;
 
 let cachedExternal: Issue[] | null = null;
 let externalMtime = 0;
 let pendingBeehiivSync: Promise<void> | null = null;
+let beehiivSync = realSyncBeehiiv;
 
 function hasBeehiivCredentials(): boolean {
   return Boolean(process.env.BEEHIIV_API_KEY && process.env.BEEHIIV_PUBLICATION_ID);
@@ -42,8 +44,23 @@ async function runBeehiivSync(reason: string, wait: boolean) {
   if (!hasBeehiivCredentials()) return;
   if (!pendingBeehiivSync) {
     pendingBeehiivSync = (async () => {
+      console.info(`[content] Beehiiv sync starting (${reason})`);
       try {
-        await syncBeehiiv();
+        await beehiivSync();
+        cachedExternal = null;
+        externalMtime = 0;
+        let refreshed: Issue[] | null = null;
+        try {
+          refreshed = await loadExternal({ skipTtl: true });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          console.warn(`[content] Beehiiv cache reload failed: ${message}`);
+        }
+        if (refreshed) {
+          console.info(`[content] Beehiiv cache refreshed with ${refreshed.length} issues`);
+        } else {
+          console.info(`[content] Beehiiv cache refresh completed with no data`);
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.warn(`[content] Beehiiv sync failed (${reason}): ${message}`);
@@ -58,7 +75,7 @@ async function runBeehiivSync(reason: string, wait: boolean) {
 }
 
 // Try to load external Beehiiv cache if present
-async function loadExternal(opts: { force?: boolean } = {}): Promise<Issue[] | null> {
+async function loadExternal(opts: { force?: boolean; skipTtl?: boolean } = {}): Promise<Issue[] | null> {
   try {
     let stat = await fs.stat(beehiivCacheFile).catch(() => null as any);
     if ((opts.force || !stat) && hasBeehiivCredentials()) {
@@ -68,7 +85,14 @@ async function loadExternal(opts: { force?: boolean } = {}): Promise<Issue[] | n
     if (!stat) return null;
 
     const ageMs = Date.now() - stat.mtimeMs;
-    if (hasBeehiivCredentials() && beehiivCacheTtlMs > 0 && ageMs > beehiivCacheTtlMs) {
+    let cacheIsFresh = true;
+    if (!opts.skipTtl && hasBeehiivCredentials() && beehiivCacheTtlMs > 0 && ageMs > beehiivCacheTtlMs) {
+      console.info(
+        `[content] Beehiiv cache stale (age=${Math.round(ageMs)}ms > ttl=${beehiivCacheTtlMs}ms); scheduling refresh`
+      );
+      cachedExternal = null;
+      externalMtime = 0;
+      cacheIsFresh = false;
       // Fire-and-forget refresh; the current cache is still usable.
       void runBeehiivSync("stale", false);
     }
@@ -80,9 +104,10 @@ async function loadExternal(opts: { force?: boolean } = {}): Promise<Issue[] | n
     const buf = await fs.readFile(beehiivCacheFile, "utf-8");
     const json = JSON.parse(buf) as BeehiivCache;
     if (!json?.issues || !Array.isArray(json.issues)) return null;
-    cachedExternal = json.issues.filter((i) => i && i.issueId && i.title && i.bodyHtml);
-    externalMtime = mtime;
-    return cachedExternal;
+    const filtered = json.issues.filter((i) => i && i.issueId && i.title && i.bodyHtml);
+    cachedExternal = filtered;
+    externalMtime = cacheIsFresh ? mtime : 0;
+    return filtered;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.warn(`[content] loadExternal failed: ${message}`);
@@ -193,4 +218,16 @@ function toCard(i: Issue): IssueCard {
 }
 
 // Optional: warm external cache on module load (non-blocking)
-ensureExternalLoaded(true).catch(() => {});
+if (warmBeehiivCacheOnLoad) {
+  ensureExternalLoaded(true).catch(() => {});
+}
+
+export function __resetContentCacheForTests(): void {
+  cachedLocal = null;
+  cachedExternal = null;
+  externalMtime = 0;
+}
+
+export function __setBeehiivSyncForTests(fn: typeof realSyncBeehiiv | null): void {
+  beehiivSync = fn ?? realSyncBeehiiv;
+}
