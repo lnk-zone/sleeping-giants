@@ -5,6 +5,15 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@sleeping-giants/reader/*": ["apps/reader/src/*"],
+      "@sleeping-giants/mcp/*": ["services/mcp/src/*"],
+      "@sleeping-giants/shared/*": ["packages/shared/src/*"],
+      "@sleeping-giants/design/*": ["packages/design/src/*"],
+      "@sleeping-giants/data/*": ["packages/data/src/*"],
+      "@sleeping-giants/analytics/*": ["packages/analytics/src/*"]
+    }
   }
 }

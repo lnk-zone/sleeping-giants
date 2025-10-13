@@ -1,4 +1,7 @@
 packages:
-  - "apps/*"
-  - "services/*"
-  - "packages/*"
+  - "apps/reader"
+  - "services/mcp"
+  - "packages/shared"
+  - "packages/design"
+  - "packages/data"
+  - "packages/analytics"

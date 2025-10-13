@@ -3,15 +3,25 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/sg-component",
-    "services/hub",
+    "apps/reader",
+    "services/mcp",
     "packages/shared",
-    "packages/content"
+    "packages/design",
+    "packages/data",
+    "packages/analytics"
   ],
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r --parallel dev",
     "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.5.0"
   }
 }
