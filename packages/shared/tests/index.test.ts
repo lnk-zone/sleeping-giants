@@ -34,6 +34,8 @@ describe('schema validation', () => {
   it('validates an issue payload', () => {
     const issue = {
       id: 'issue-1',
+      tenantId: 'tenant-1',
+      newsletterId: 'newsletter-1',
       title: 'Improve onboarding',
       description: 'New users struggle to understand the product setup flow.',
       status: IssueStatus.OPEN,
@@ -50,6 +52,7 @@ describe('schema validation', () => {
     expect(() =>
       SaveSchema.parse({
         id: 'save-1',
+        tenantId: 'tenant-1',
         userId: 'user-1',
         source: SaveSource.AUTOMATION,
         savedAt: 'invalid',
@@ -60,6 +63,7 @@ describe('schema validation', () => {
 
   it('validates referral progress payloads', () => {
     const progress = {
+      tenantId: 'tenant-1',
       code: 'REF-CODE',
       totalReferrals: 5,
       status: ReferralStatus.IN_PROGRESS,
@@ -117,11 +121,15 @@ describe('schema validation', () => {
 describe('schema registry', () => {
   it('exposes all schemas under contractSchemas', () => {
     expect(Object.keys(contractSchemas)).toEqual([
+      'Tenant',
+      'NewsletterApp',
       'Issue',
       'Save',
       'StreakEntry',
       'ReferralMilestone',
       'ReferralProgress',
+      'SubscriptionEvent',
+      'UserSession',
       'AnalyticsEvent',
       'StandardError',
     ]);
