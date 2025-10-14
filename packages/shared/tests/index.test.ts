@@ -2,19 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   AnalyticsEventName,
   AnalyticsEventSchema,
-  BuilderModeInputSchema,
-  BuilderModeOutputSchema,
-  CONSTRAINTS,
-  Constraint,
   ErrorCode,
-  INDUSTRIES,
   ISSUE_TAGS,
-  Industry,
   IssueImpact,
   IssueSchema,
   IssueStatus,
-  PRODUCT_STAGES,
-  ProductStage,
   ReferralProgressSchema,
   ReferralStatus,
   SaveSchema,
@@ -26,37 +18,6 @@ import {
 } from '../src/index.js';
 
 describe('enumerations', () => {
-  it('exposes stable industry values', () => {
-    expect(INDUSTRIES).toEqual([
-      Industry.FINTECH,
-      Industry.HEALTHCARE,
-      Industry.EDUCATION,
-      Industry.ECOMMERCE,
-      Industry.SUSTAINABILITY,
-      Industry.MEDIA,
-    ]);
-  });
-
-  it('exposes stable product stages', () => {
-    expect(PRODUCT_STAGES).toEqual([
-      ProductStage.IDEATION,
-      ProductStage.PROTOTYPE,
-      ProductStage.MVP,
-      ProductStage.GROWTH,
-      ProductStage.SCALE,
-    ]);
-  });
-
-  it('exposes stable constraints', () => {
-    expect(CONSTRAINTS).toEqual([
-      Constraint.TIME,
-      Constraint.BUDGET,
-      Constraint.COMPLIANCE,
-      Constraint.TALENT,
-      Constraint.DATA,
-    ]);
-  });
-
   it('exposes stable issue tags', () => {
     expect(ISSUE_TAGS).toEqual([
       'ux',
@@ -90,50 +51,11 @@ describe('schema validation', () => {
       SaveSchema.parse({
         id: 'save-1',
         userId: 'user-1',
-        source: SaveSource.BUILDER,
+        source: SaveSource.AUTOMATION,
         savedAt: 'invalid',
         tags: [],
       }),
     ).toThrowError(/Invalid datetime/);
-  });
-
-  it('validates builder mode input and output', () => {
-    const builderInput = {
-      industry: Industry.ECOMMERCE,
-      stage: ProductStage.MVP,
-      constraints: [Constraint.TIME, Constraint.BUDGET],
-      goal: 'Launch a marketplace pilot',
-      targetCustomer: 'Independent retailers',
-      context: 'Focused on North American launch partners.',
-      tags: ['integration'],
-    } as const;
-
-    const issue = IssueSchema.parse({
-      id: 'issue-2',
-      title: 'Merchant analytics gap',
-      description: 'Retailers cannot access actionable sales analytics.',
-      status: IssueStatus.OPEN,
-      tags: ['research'],
-      impact: IssueImpact.MEDIUM,
-      createdAt: '2024-01-10T08:00:00.000Z',
-      updatedAt: '2024-01-10T08:00:00.000Z',
-    });
-
-    const builderOutput = {
-      id: 'builder-1',
-      summary: 'Deliver a merchant insights dashboard that highlights real-time KPIs.',
-      keyActions: [
-        'Interview 5 existing merchants to map analytics needs.',
-        'Prototype KPI dashboard widgets with live marketplace data.',
-      ],
-      suggestedIssues: [issue],
-      confidence: 0.8,
-      impact: IssueImpact.HIGH,
-      references: ['https://example.com/dashboard'],
-    } as const;
-
-    expect(BuilderModeInputSchema.parse(builderInput)).toEqual(builderInput);
-    expect(BuilderModeOutputSchema.parse(builderOutput)).toEqual(builderOutput);
   });
 
   it('validates referral progress payloads', () => {
@@ -163,13 +85,10 @@ describe('schema validation', () => {
 
   it('validates analytics events and errors', () => {
     const event = {
-      name: AnalyticsEventName.BUILDER_SUBMITTED,
+      name: AnalyticsEventName.SESSION_STARTED,
       timestamp: '2024-03-01T15:30:00.000Z',
       userId: 'user-123',
-      properties: {
-        industry: Industry.FINTECH,
-        stage: ProductStage.GROWTH,
-      },
+      properties: { session: 'beta-access' },
     } as const;
 
     expect(AnalyticsEventSchema.parse(event)).toMatchObject(event);
@@ -201,8 +120,6 @@ describe('schema registry', () => {
       'Issue',
       'Save',
       'StreakEntry',
-      'BuilderModeInput',
-      'BuilderModeOutput',
       'ReferralMilestone',
       'ReferralProgress',
       'AnalyticsEvent',

@@ -12,12 +12,18 @@ export class IssuesService {
   ) {}
 
   async list(limit?: number): Promise<Issue[]> {
-    const cappedLimit = Math.max(1, Math.min(limit ?? this.config.builder.suggestionLimit, 25));
+    const cappedLimit = Math.max(
+      1,
+      Math.min(limit ?? this.config.issues.suggestionLimit, 25),
+    );
     return this.provider.listIssues(cappedLimit);
   }
 
   async findByTags(tags: readonly string[], limit?: number): Promise<Issue[]> {
-    const cappedLimit = Math.max(1, Math.min(limit ?? this.config.builder.suggestionLimit, 25));
+    const cappedLimit = Math.max(
+      1,
+      Math.min(limit ?? this.config.issues.suggestionLimit, 25),
+    );
     return this.provider.searchIssues(tags, cappedLimit);
   }
 }

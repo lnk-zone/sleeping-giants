@@ -1,40 +1,6 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-/**
- * Enumerations and tag lists consumed by the Apps SDK.
- */
-export enum Industry {
-  FINTECH = 'fintech',
-  HEALTHCARE = 'healthcare',
-  EDUCATION = 'education',
-  ECOMMERCE = 'ecommerce',
-  SUSTAINABILITY = 'sustainability',
-  MEDIA = 'media',
-}
-
-export const INDUSTRIES = Object.freeze(Object.values(Industry));
-
-export enum ProductStage {
-  IDEATION = 'ideation',
-  PROTOTYPE = 'prototype',
-  MVP = 'mvp',
-  GROWTH = 'growth',
-  SCALE = 'scale',
-}
-
-export const PRODUCT_STAGES = Object.freeze(Object.values(ProductStage));
-
-export enum Constraint {
-  TIME = 'time',
-  BUDGET = 'budget',
-  COMPLIANCE = 'compliance',
-  TALENT = 'talent',
-  DATA = 'data',
-}
-
-export const CONSTRAINTS = Object.freeze(Object.values(Constraint));
-
 export const ISSUE_TAGS = Object.freeze([
   'ux',
   'performance',
@@ -71,7 +37,7 @@ export interface Issue {
 }
 
 export enum SaveSource {
-  BUILDER = 'builder',
+  AUTOMATION = 'automation',
   MANUAL = 'manual',
   IMPORTED = 'imported',
 }
@@ -91,26 +57,6 @@ export interface StreakEntry {
   completed: boolean;
   count: number;
   notes?: string;
-}
-
-export interface BuilderModeInput {
-  industry: Industry;
-  stage: ProductStage;
-  constraints: Constraint[];
-  goal: string;
-  targetCustomer: string;
-  context?: string;
-  tags: IssueTag[];
-}
-
-export interface BuilderModeOutput {
-  id: string;
-  summary: string;
-  keyActions: string[];
-  suggestedIssues: Issue[];
-  confidence: number;
-  impact: IssueImpact;
-  references?: string[];
 }
 
 export interface ReferralMilestone {
@@ -136,7 +82,6 @@ export interface ReferralProgress {
 export enum AnalyticsEventName {
   ISSUE_CREATED = 'issue_created',
   ISSUE_RESOLVED = 'issue_resolved',
-  BUILDER_SUBMITTED = 'builder_submitted',
   SAVE_CREATED = 'save_created',
   REFERRAL_SHARED = 'referral_shared',
   SESSION_STARTED = 'session_started',
@@ -213,26 +158,6 @@ export const StreakEntrySchema: z.ZodType<StreakEntry> = z.object({
   notes: z.string().min(1).optional(),
 });
 
-export const BuilderModeInputSchema: z.ZodType<BuilderModeInput> = z.object({
-  industry: z.nativeEnum(Industry),
-  stage: z.nativeEnum(ProductStage),
-  constraints: z.array(z.nativeEnum(Constraint)).max(CONSTRAINTS.length),
-  goal: nonEmptyString,
-  targetCustomer: nonEmptyString,
-  context: z.string().optional(),
-  tags: z.array(IssueTagSchema),
-});
-
-export const BuilderModeOutputSchema: z.ZodType<BuilderModeOutput> = z.object({
-  id: nonEmptyString,
-  summary: nonEmptyString,
-  keyActions: z.array(nonEmptyString),
-  suggestedIssues: z.array(IssueSchema),
-  confidence: z.number().min(0).max(1),
-  impact: z.nativeEnum(IssueImpact),
-  references: z.array(z.string().url()).optional(),
-});
-
 export const ReferralMilestoneSchema: z.ZodType<ReferralMilestone> = z.object({
   target: z.number().int().positive(),
   reward: nonEmptyString,
@@ -276,8 +201,6 @@ const schemas = {
   Issue: IssueSchema,
   Save: SaveSchema,
   StreakEntry: StreakEntrySchema,
-  BuilderModeInput: BuilderModeInputSchema,
-  BuilderModeOutput: BuilderModeOutputSchema,
   ReferralMilestone: ReferralMilestoneSchema,
   ReferralProgress: ReferralProgressSchema,
   AnalyticsEvent: AnalyticsEventSchema,
