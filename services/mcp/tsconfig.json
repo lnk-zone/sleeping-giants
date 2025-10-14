@@ -2,8 +2,13 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src", "tests"],
-  "references": []
+  "references": [
+    { "path": "../../packages/shared/tsconfig.build.json" },
+    { "path": "../../packages/data/tsconfig.build.json" }
+  ]
 }

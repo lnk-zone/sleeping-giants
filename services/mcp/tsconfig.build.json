@@ -6,7 +6,13 @@
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "paths": {
+      "@sleeping-giants/shared/*": ["packages/shared/dist/*"],
+      "@sleeping-giants/shared/*.js": ["packages/shared/dist/*.js"],
+      "@sleeping-giants/data/*": ["packages/data/dist/*"],
+      "@sleeping-giants/data/*.js": ["packages/data/dist/*.js"]
+    }
   },
   "include": ["src"]
 }
