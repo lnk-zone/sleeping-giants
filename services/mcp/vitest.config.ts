@@ -1,19 +1,18 @@
+import baseConfig from '../../config/vitest/base.js';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
-export default defineConfig({
-  plugins: [tsconfigPaths()],
-  esbuild: {
-    tsconfigRaw: {
-      compilerOptions: {
-        experimentalDecorators: true,
-        emitDecoratorMetadata: true,
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    plugins: [tsconfigPaths()],
+    esbuild: {
+      tsconfigRaw: {
+        compilerOptions: {
+          experimentalDecorators: true,
+          emitDecoratorMetadata: true,
+        },
       },
     },
-  },
-  test: {
-    environment: 'node',
-    globals: true,
-    include: ['tests/**/*.test.ts']
-  }
-});
+  }),
+);

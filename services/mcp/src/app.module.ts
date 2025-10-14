@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
 import { AnalyticsController } from './analytics/analytics.controller.js';
-import { BuilderController } from './builder/builder.controller.js';
-import { BuilderService } from './builder/builder.service.js';
 import { APP_CONFIG, loadConfig } from './config.js';
 import { HealthController } from './common/health.controller.js';
 import { LatencyInterceptor } from './common/latency.interceptor.js';
@@ -41,7 +39,6 @@ import { ReferralsController } from './referrals/referrals.controller.js';
   controllers: [
     HealthController,
     AnalyticsController,
-    BuilderController,
     IssuesController,
     SavesController,
     StreaksController,
@@ -52,7 +49,6 @@ import { ReferralsController } from './referrals/referrals.controller.js';
     { provide: APP_CONFIG, useFactory: loadConfig },
     { provide: ISSUE_PROVIDER, useFactory: () => new InMemoryIssueProvider() },
     IssuesService,
-    BuilderService,
     SavesRepository,
     StreaksRepository,
     ReferralsRepository,

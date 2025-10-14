@@ -7,15 +7,12 @@ import {
 } from '@nestjs/platform-fastify';
 import {
   AnalyticsEventName,
-  BuilderModeInputSchema,
-  BuilderModeOutputSchema,
-  Industry,
   IssueImpact,
   IssueStatus,
-  ProductStage,
   ReferralProgressSchema,
   ReferralStatus,
   SaveSchema,
+  SaveSource,
   StreakEntrySchema,
 } from '@sleeping-giants/shared/contracts.js';
 import { AppModule } from '../src/app.module.js';
@@ -97,46 +94,25 @@ describe('MCP service integration', () => {
     expect(response.statusCode).toBe(401);
   });
 
-  it('returns deterministic builder mode responses', async () => {
-    const payload = BuilderModeInputSchema.parse({
-      industry: Industry.FINTECH,
-      stage: ProductStage.MVP,
-      constraints: [],
-      goal: 'Launch a partner analytics pilot',
-      targetCustomer: 'Operations leads',
-      context: 'Pilot spans EU region accounts.',
-      tags: ['integration', 'ux'],
-    });
-
-    const first = await app.inject({
-      method: 'POST',
-      url: '/api/builder-mode',
+  it('lists issues using the configured provider', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/issues?tags=ux&limit=1',
       headers: authHeaders,
-      payload,
     });
-    debugResponse(first, 'builder-mode failure');
-    expect(first.statusCode).toBe(201);
-    const firstBody = BuilderModeOutputSchema.parse(first.json());
-
-    const second = await app.inject({
-      method: 'POST',
-      url: '/api/builder-mode',
-      headers: authHeaders,
-      payload,
-    });
-    expect(second.statusCode).toBe(201);
-    const secondBody = BuilderModeOutputSchema.parse(second.json());
-
-    expect(secondBody).toEqual(firstBody);
-    expect(secondBody.impact).toBeTypeOf('string');
-    expect(secondBody.suggestedIssues[0].tags).toContain('integration');
+    debugResponse(response, 'issues failure');
+    expect(response.statusCode).toBe(200);
+    const issues = response.json();
+    expect(Array.isArray(issues)).toBe(true);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({ id: 'issue-growth' });
   });
 
   it('creates and lists saves through the persistence layer', async () => {
     const savePayload = SaveSchema.parse({
       id: 'save-123',
       userId: 'user-1',
-      source: 'builder',
+      source: SaveSource.AUTOMATION,
       savedAt: new Date().toISOString(),
       tags: ['ux'],
     });
@@ -236,10 +212,10 @@ describe('MCP service integration', () => {
 
   it('ingests analytics within latency budget', async () => {
     const payload = {
-      name: AnalyticsEventName.BUILDER_SUBMITTED,
+      name: AnalyticsEventName.SESSION_STARTED,
       timestamp: new Date().toISOString(),
       userId: 'user-analytics',
-      properties: { feature: 'builder-mode', impact: IssueImpact.HIGH },
+      properties: { feature: 'issue-triage', impact: IssueImpact.HIGH },
     };
 
     const response = await app.inject({

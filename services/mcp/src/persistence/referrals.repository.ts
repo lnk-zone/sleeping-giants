@@ -46,7 +46,8 @@ export class ReferralsRepository {
       const achievedAt = record.achievedAt.get(milestone.target);
       return { ...cloneMilestone(milestone), achievedAt };
     });
-    const finalTarget = this.milestones[this.milestones.length - 1]?.target ?? 0;
+    const finalTarget =
+      this.milestones[this.milestones.length - 1]?.target ?? Number.POSITIVE_INFINITY;
     const status =
       totalReferrals === 0
         ? ReferralStatus.NOT_STARTED

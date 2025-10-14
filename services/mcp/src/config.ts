@@ -5,9 +5,8 @@ export interface RateLimitConfig {
   readonly timeWindow: string | number;
 }
 
-export interface BuilderConfig {
+export interface IssuesConfig {
   readonly suggestionLimit: number;
-  readonly defaultReferences: readonly string[];
 }
 
 export interface McpConfig {
@@ -15,7 +14,7 @@ export interface McpConfig {
   readonly rateLimit: RateLimitConfig;
   readonly latencyBudgetMs: number;
   readonly referralMilestones: readonly ReferralMilestone[];
-  readonly builder: BuilderConfig;
+  readonly issues: IssuesConfig;
   readonly allowedUnauthenticatedPaths: readonly string[];
 }
 
@@ -29,13 +28,38 @@ const toNumber = (value: string | undefined, fallback: number): number => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-export const loadConfig = (): McpConfig => {
-  const defaultMilestones: ReferralMilestone[] = [
-    { target: 1, reward: 'Beta access badge' },
-    { target: 3, reward: 'Strategy session' },
-    { target: 5, reward: 'Founders roundtable invite' },
-  ];
+const parseReferralMilestones = (
+  raw: string | undefined,
+): readonly ReferralMilestone[] => {
+  if (!raw) {
+    return [];
+  }
 
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((milestone): milestone is ReferralMilestone => {
+        if (!milestone || typeof milestone !== 'object') {
+          return false;
+        }
+        const candidate = milestone as Record<string, unknown>;
+        return (
+          typeof candidate.target === 'number' &&
+          typeof candidate.reward === 'string' &&
+          (candidate.achievedAt === undefined || typeof candidate.achievedAt === 'string')
+        );
+      })
+      .map((milestone) => ({ ...milestone }));
+  } catch {
+    return [];
+  }
+};
+
+export const loadConfig = (): McpConfig => {
   return {
     apiKey: process.env.MCP_API_KEY ?? 'local-dev-key',
     rateLimit: {
@@ -43,13 +67,11 @@ export const loadConfig = (): McpConfig => {
       timeWindow: process.env.MCP_RATE_LIMIT_WINDOW ?? '1 minute',
     },
     latencyBudgetMs: toNumber(process.env.MCP_LATENCY_BUDGET_MS, 500),
-    referralMilestones: defaultMilestones,
-    builder: {
-      suggestionLimit: toNumber(process.env.MCP_BUILDER_SUGGESTION_LIMIT, 3),
-      defaultReferences: Object.freeze([
-        'https://sleepinggiants.example.com/builder-mode',
-        'https://sleepinggiants.example.com/resources/playbook',
-      ]),
+    referralMilestones: Object.freeze(
+      parseReferralMilestones(process.env.MCP_REFERRAL_MILESTONES),
+    ),
+    issues: {
+      suggestionLimit: toNumber(process.env.MCP_ISSUE_SUGGESTION_LIMIT, 5),
     },
     allowedUnauthenticatedPaths: ['/health'],
   } satisfies McpConfig;
