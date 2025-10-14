@@ -1,9 +1,5 @@
-export interface Message {
-  readonly id: string;
-  readonly payload: Record<string, unknown>;
-}
-
-export const createMessage = (id: string, payload: Record<string, unknown>): Message => ({
-  id,
-  payload
-});
+export * from './app.module.js';
+export * from './main.js';
+export * from './config.js';
+export * from './builder/builder.service.js';
+export * from './issues/issue-provider.js';

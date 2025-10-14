@@ -6,7 +6,13 @@
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "composite": true,
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo",
+    "paths": {
+      "@sleeping-giants/shared/*": ["packages/shared/dist/*"],
+      "@sleeping-giants/shared/*.js": ["packages/shared/dist/*.js"]
+    }
   },
   "include": ["src"]
 }
