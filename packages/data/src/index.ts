@@ -18,3 +18,4 @@ export * from './beehiiv/types.js';
 export { BeehiivClient } from './beehiiv/client.js';
 export { BeehiivWorker } from './beehiiv/worker.js';
 export * from './issues/index.js';
+export * from './search/issues.js';

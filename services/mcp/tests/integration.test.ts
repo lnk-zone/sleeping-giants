@@ -24,6 +24,7 @@ const createTestConfig = (): McpConfig => ({
   ...loadConfig(),
   apiKey: 'test-key',
   latencyBudgetMs: 750,
+  tenantId: 'tenant-test',
 });
 
 const debugResponse = (response: { statusCode: number; json(): unknown }, label: string) => {
@@ -48,6 +49,8 @@ describe('MCP service integration', () => {
         new InMemoryIssueProvider([
           {
             id: 'issue-growth',
+            tenantId: 'tenant-test',
+            newsletterId: 'newsletter-test',
             title: 'Improve activation messaging',
             description: 'Activation emails are not highlighting the premium data hooks.',
             status: IssueStatus.OPEN,
@@ -58,6 +61,8 @@ describe('MCP service integration', () => {
           },
           {
             id: 'issue-insights',
+            tenantId: 'tenant-test',
+            newsletterId: 'newsletter-test',
             title: 'Expand actionable insights',
             description: 'Operators need better alerts around failing automations.',
             status: IssueStatus.OPEN,
@@ -111,6 +116,7 @@ describe('MCP service integration', () => {
   it('creates and lists saves through the persistence layer', async () => {
     const savePayload = SaveSchema.parse({
       id: 'save-123',
+      tenantId: 'tenant-test',
       userId: 'user-1',
       source: SaveSource.AUTOMATION,
       savedAt: new Date().toISOString(),

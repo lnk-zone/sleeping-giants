@@ -22,9 +22,11 @@ const cloneMilestone = (milestone: ReferralMilestone): ReferralMilestone => ({
 export class ReferralsRepository {
   private readonly store = new Map<string, ReferralRecord>();
   private readonly milestones: readonly ReferralMilestone[];
+  private readonly tenantId: string;
 
   constructor(@Inject(APP_CONFIG) config: McpConfig) {
     this.milestones = config.referralMilestones;
+    this.tenantId = config.tenantId;
   }
 
   private getOrCreate(code: string): ReferralRecord {
@@ -57,6 +59,7 @@ export class ReferralsRepository {
     const nextMilestone = this.milestones.find((milestone) => totalReferrals < milestone.target);
 
     return ReferralProgressSchema.parse({
+      tenantId: this.tenantId,
       code,
       totalReferrals,
       status,

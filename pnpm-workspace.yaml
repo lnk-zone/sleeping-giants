@@ -1,6 +1,7 @@
 packages:
   - "apps/reader"
   - "services/mcp"
+  - "services/newsletter-sync"
   - "packages/shared"
   - "packages/design"
   - "packages/data"

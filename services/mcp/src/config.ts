@@ -16,6 +16,7 @@ export interface McpConfig {
   readonly referralMilestones: readonly ReferralMilestone[];
   readonly issues: IssuesConfig;
   readonly allowedUnauthenticatedPaths: readonly string[];
+  readonly tenantId: string;
 }
 
 export const APP_CONFIG = Symbol('APP_CONFIG');
@@ -74,6 +75,7 @@ export const loadConfig = (): McpConfig => {
       suggestionLimit: toNumber(process.env.MCP_ISSUE_SUGGESTION_LIMIT, 5),
     },
     allowedUnauthenticatedPaths: ['/health'],
+    tenantId: process.env.MCP_TENANT_ID ?? 'platform',
   } satisfies McpConfig;
 };
 

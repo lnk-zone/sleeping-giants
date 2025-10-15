@@ -6,6 +6,7 @@ export interface PrdPost {
   slug: string;
   excerpt: string;
   body: string;
+  bodyPlain: string;
   tags: string[];
   publishedAt: string;
   updatedAt: string;
@@ -59,6 +60,7 @@ export const normalizePrdPost = (input: PrdPostInput): PrdPost => {
     slug: input.slug,
     excerpt,
     body,
+    bodyPlain: plainText,
     tags: input.tags ?? [],
     publishedAt,
     updatedAt,

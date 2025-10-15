@@ -24,5 +24,11 @@ These variables must be supplied per tenant or developer environment. Copy the t
 - `MCP_LATENCY_BUDGET_MS` – Target response time budget used by latency enforcement.
 - `MCP_ISSUE_SUGGESTION_LIMIT` – Default limit for issue list queries.
 - `MCP_REFERRAL_MILESTONES` – JSON array describing referral progress milestones.
+- `MCP_TENANT_ID` – Tenant identifier used by the MCP worker for in-memory persistence.
+- `NEWSLETTER_SYNC_CACHE_TTL_MINUTES` – Minutes to warm Beehiiv cache (clamped between 15 and 60).
+- `NEWSLETTER_SYNC_ASSETS_BUCKET` – Supabase Storage bucket for publication logos and theme assets.
+- `NEWSLETTER_SYNC_IMAGE_MAX_WIDTH` – Maximum pixel width when resizing downloaded branding assets.
+- `NEWSLETTER_SYNC_IMAGE_QUALITY` – Output quality (0–100) for compressed branding images.
+- `NEWSLETTER_SYNC_MAX_RETRIES` – Maximum retry attempts before surfacing sync warnings.
 
 Keep sensitive files such as `.env.platform` out of source control. Tenant templates can be committed to help bootstrap new environments, but replace secrets with placeholders.
