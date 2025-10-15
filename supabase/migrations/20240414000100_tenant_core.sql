@@ -1,9 +1,10 @@
+-- === Extensions =============================================================
 create extension if not exists "pgsodium";
 create extension if not exists "pgcrypto";
 create extension if not exists "uuid-ossp";
 create extension if not exists citext;
 
--- Shared helper functions ----------------------------------------------------
+-- === Shared helper functions ===============================================
 create or replace function public.current_tenant_id()
   returns uuid
   language plpgsql
@@ -93,7 +94,7 @@ $$
   ) = 'service_role';
 $$;
 
--- Enumerated types -----------------------------------------------------------
+-- === Enumerated types =======================================================
 create type public.tenant_status as enum ('active', 'suspended', 'archived');
 create type public.tenant_plan as enum ('starter', 'growth', 'enterprise');
 create type public.newsletter_provider as enum ('beehiiv', 'custom');
@@ -116,7 +117,7 @@ create type public.subscription_event_type as enum (
 create type public.asset_type as enum ('logo', 'wordmark', 'icon', 'banner');
 create type public.issue_section_type as enum ('hero', 'highlight', 'body', 'cta', 'footer');
 
--- Tenancy tables -------------------------------------------------------------
+-- === Tenancy tables =========================================================
 create table if not exists public.tenants (
   id uuid primary key default gen_random_uuid(),
   slug citext unique not null,
@@ -257,7 +258,7 @@ create table if not exists public.referrals (
   unique (tenant_id, code)
 );
 
--- Secure API credential storage ---------------------------------------------
+-- === Secure API credential storage =========================================
 create table if not exists public.api_credentials (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.tenants(id) on delete cascade,
@@ -278,20 +279,22 @@ create table if not exists public.api_credentials (
   unique (tenant_id)
 );
 
+-- Create (if missing) a named root key for wrapping tenant secrets
 do
 $$
 begin
   if not exists (
-    select 1 from pgsodium.key where name = 'tenant_api_credentials_root'
+    select 1 from pgsodium.valid_key where name = 'tenant_api_credentials_root'
   ) then
-    perform pgsodium.create_key(name => 'tenant_api_credentials_root', comment => 'Root wrapping key for tenant API secrets');
+    perform (pgsodium.create_key(name := 'tenant_api_credentials_root')).id;
   end if;
 end;
 $$;
 
+-- Decrypt helper that uses the UUID-aware AEAD-DET decrypt
 create or replace function public.decrypt_secret(
   cipher bytea,
-  nonce bytea,
+  nonce  bytea,
   key_id uuid
 )
   returns text
@@ -300,17 +303,14 @@ create or replace function public.decrypt_secret(
   stable
 as
 $$
-declare
-  key_data bytea;
 begin
   if cipher is null or nonce is null or key_id is null then
     return null;
   end if;
 
-  key_data := pgsodium.get_key(key_id => key_id);
-
   return convert_from(
-    pgsodium.crypto_aead_det_decrypt(cipher, nonce, '', key_data),
+    -- (ciphertext, additional, key_uuid, nonce)
+    pgsodium.crypto_aead_det_decrypt(cipher, ''::bytea, key_id, nonce),
     'utf8'
   );
 end;
@@ -319,7 +319,7 @@ $$;
 revoke all on function public.decrypt_secret(bytea, bytea, uuid) from public;
 grant execute on function public.decrypt_secret(bytea, bytea, uuid) to service_role;
 
--- Assets --------------------------------------------------------------------
+-- === Assets ================================================================
 create table if not exists public.assets (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.tenants(id) on delete cascade,
@@ -332,7 +332,7 @@ create table if not exists public.assets (
   unique (tenant_id, asset_type)
 );
 
--- Subscription events -------------------------------------------------------
+-- === Subscription events ====================================================
 create table if not exists public.subscription_events (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references public.tenants(id) on delete cascade,
@@ -345,7 +345,7 @@ create table if not exists public.subscription_events (
   metadata jsonb default '{}'::jsonb
 );
 
--- Indexing ------------------------------------------------------------------
+-- === Indexing ============================================================== 
 create index if not exists idx_newsletters_tenant on public.newsletters (tenant_id);
 create index if not exists idx_issues_tenant on public.issues (tenant_id);
 create index if not exists idx_issue_sections_issue on public.issue_sections (issue_id);
@@ -357,7 +357,7 @@ create index if not exists idx_api_credentials_tenant on public.api_credentials 
 create index if not exists idx_assets_tenant on public.assets (tenant_id);
 create index if not exists idx_subscription_events_tenant on public.subscription_events (tenant_id);
 
--- Row Level Security --------------------------------------------------------
+-- === Row Level Security =====================================================
 alter table public.tenants enable row level security;
 alter table public.tenant_settings enable row level security;
 alter table public.newsletters enable row level security;
@@ -532,15 +532,15 @@ create policy subscription_events_insert on public.subscription_events
     or tenant_id = public.current_tenant_id()
   );
 
--- Ensure views/functions cannot be altered by tenants -----------------------
+-- === Lock down public schema; allow usage ==================================
 revoke all on schema public from anon;
 revoke all on schema public from authenticated;
 
 grant usage on schema public to anon;
 grant usage on schema public to authenticated;
 
--- Access to helper functions
-grant execute on function public.current_tenant_id to authenticated, anon;
+-- === Access to helper functions ============================================
+grant execute on function public.current_tenant_id() to authenticated, anon;
 grant execute on function public.has_tenant_role(text) to authenticated, anon;
 grant execute on function public.claim_roles() to authenticated, anon;
 grant execute on function public.is_tenant_member(uuid) to authenticated, anon;
