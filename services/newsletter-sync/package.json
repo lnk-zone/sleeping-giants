@@ -1,0 +1,23 @@
+{
+  "name": "@sleeping-giants/newsletter-sync",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter @sleeping-giants/shared build && pnpm --filter @sleeping-giants/data build && tsc -p tsconfig.build.json",
+    "dev": "tsc -w -p tsconfig.build.json",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@sleeping-giants/data": "workspace:*",
+    "@sleeping-giants/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.45.4",
+    "sharp": "^0.33.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19"
+  }
+}
