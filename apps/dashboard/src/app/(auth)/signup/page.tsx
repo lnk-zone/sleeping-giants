@@ -46,20 +46,7 @@ export default function SignupPage() {
       if (error) throw error
 
       if (data.user) {
-        // Create tenant for the new user
-        const { error: tenantError } = await supabase
-          .from('tenants')
-          .insert({
-            slug: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-'),
-            name: email.split('@')[0],
-            status: 'active',
-            plan: 'starter',
-          })
-
-        if (tenantError) {
-          console.error('Error creating tenant:', tenantError)
-        }
-
+        // Tenant will be created on first dashboard visit
         router.push('/dashboard')
       }
     } catch (err: any) {
@@ -70,18 +57,23 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 px-4">
+      <Card className="w-full max-w-md shadow-2xl border-slate-200">
+        <CardHeader className="space-y-2 text-center">
+          <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-accent shadow-lg">
+            <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <CardTitle className="text-3xl font-bold">Create an account</CardTitle>
+          <CardDescription className="text-base">
             Start your 14-day free trial. No credit card required.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form onSubmit={handleSignup} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -90,10 +82,11 @@ export default function SignupPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -102,10 +95,11 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-semibold">Confirm Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -114,22 +108,23 @@ export default function SignupPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={loading}
+                className="h-11"
               />
             </div>
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
                 {error}
               </div>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 text-base font-semibold shadow-lg" disabled={loading}>
               {loading ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-muted-foreground">
+        <CardFooter className="flex flex-col space-y-4 border-t pt-6">
+          <div className="text-sm text-slate-600">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline">
+            <Link href="/login" className="font-semibold text-primary hover:underline">
               Sign in
             </Link>
           </div>
