@@ -3,13 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/reader",
+    "apps/dashboard",
     "services/mcp",
     "services/newsletter-sync",
     "packages/shared",
-    "packages/design",
-    "packages/data",
-    "packages/analytics"
+    "packages/data"
   ],
   "scripts": {
     "build": "pnpm -r build",
