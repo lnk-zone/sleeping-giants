@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'
+import { Loader2, CheckCircle2, AlertCircle, ExternalLink, Edit2, Info } from 'lucide-react'
 
 export default function NewsletterPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [beehiivApiKey, setBeehiivApiKey] = useState('')
   const [publicationId, setPublicationId] = useState('')
   const [isConnected, setIsConnected] = useState(false)
@@ -33,8 +34,17 @@ export default function NewsletterPage() {
 
       if (credentials?.beehiiv_key_encrypted) {
         setIsConnected(true)
-        // Don't show the actual encrypted key
         setBeehiivApiKey('••••••••••••••••')
+      }
+
+      // Load publication ID from newsletters table
+      const { data: newsletter } = await supabase
+        .from('newsletters')
+        .select('external_id')
+        .single()
+
+      if (newsletter?.external_id) {
+        setPublicationId(newsletter.external_id)
       }
 
       setLoading(false)
@@ -56,6 +66,7 @@ export default function NewsletterPage() {
       let { data: tenant } = await supabase
         .from('tenants')
         .select('*')
+        .eq('created_by', user.id)
         .single()
 
       if (!tenant) {
@@ -66,6 +77,7 @@ export default function NewsletterPage() {
             name: user.email.split('@')[0],
             status: 'active',
             plan: 'starter',
+            created_by: user.id,
           })
           .select()
           .single()
@@ -74,12 +86,11 @@ export default function NewsletterPage() {
         tenant = newTenant
       }
 
-      // Store API credentials (in production, this would be encrypted server-side)
+      // Store API credentials
       const { error: credError } = await supabase
         .from('api_credentials')
         .upsert({
           tenant_id: tenant.id,
-          // Note: In production, encryption should happen server-side
           beehiiv_key_encrypted: beehiivApiKey,
           created_by: user.id,
         })
@@ -93,15 +104,16 @@ export default function NewsletterPage() {
           tenant_id: tenant.id,
           external_id: publicationId,
           provider: 'beehiiv',
-          name: 'My Newsletter', // Will be updated after sync
+          name: 'My Newsletter',
           visibility: 'public',
         })
 
       if (newsletterError) throw newsletterError
 
       setIsConnected(true)
+      setEditing(false)
       
-      // Trigger sync
+      // Trigger sync (this will fail until MCP endpoint is built, which is expected)
       await triggerSync(tenant.id)
 
     } catch (err: any) {
@@ -125,13 +137,24 @@ export default function NewsletterPage() {
         body: JSON.stringify({ tenantId }),
       })
 
-      if (!response.ok) throw new Error('Sync failed')
+      if (!response.ok) throw new Error('Sync endpoint not yet implemented')
 
       setSyncStatus('success')
-    } catch (err) {
+    } catch (err: any) {
       setSyncStatus('error')
-      setError('Sync failed. Please try again.')
+      setError(err.message || 'Sync failed. The sync endpoint will be implemented in Week 4.')
     }
+  }
+
+  const handleEdit = () => {
+    setEditing(true)
+    setBeehiivApiKey('') // Clear to allow re-entry
+  }
+
+  const handleCancelEdit = () => {
+    setEditing(false)
+    setBeehiivApiKey('••••••••••••••••') // Restore masked value
+    setError(null)
   }
 
   if (loading) {
@@ -154,12 +177,56 @@ export default function NewsletterPage() {
           </p>
         </div>
 
+        {/* API Version Info Banner */}
+        <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
+          <div className="flex gap-3">
+            <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold text-blue-900">Using Beehiiv API v2</p>
+              <p className="text-blue-800">
+                To find your <strong>Publication ID</strong>:
+              </p>
+              <ol className="list-decimal list-inside space-y-1 text-blue-800 ml-2">
+                <li>Go to your Beehiiv dashboard</li>
+                <li>Navigate to <strong>Settings → Integrations → API</strong></li>
+                <li>Your Publication ID starts with <code className="bg-blue-100 px-1 py-0.5 rounded">pub_</code></li>
+              </ol>
+              <p className="text-blue-800">
+                <a
+                  href="https://developers.beehiiv.com/docs/v2/ZG9jOjM1NzQ0MzY3-authentication"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold hover:underline inline-flex items-center gap-1"
+                >
+                  View Beehiiv API v2 Documentation
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
         <Card>
           <CardHeader>
-            <CardTitle>Beehiiv Integration</CardTitle>
-            <CardDescription>
-              Enter your Beehiiv API credentials to sync your newsletter content
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Beehiiv Integration</CardTitle>
+                <CardDescription>
+                  Enter your Beehiiv API credentials to sync your newsletter content
+                </CardDescription>
+              </div>
+              {isConnected && !editing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEdit}
+                  className="gap-2"
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleConnect} className="space-y-6">
@@ -172,7 +239,7 @@ export default function NewsletterPage() {
                   value={beehiivApiKey}
                   onChange={(e) => setBeehiivApiKey(e.target.value)}
                   required
-                  disabled={saving || isConnected}
+                  disabled={saving || (isConnected && !editing)}
                 />
                 <p className="text-sm text-muted-foreground">
                   Find your API key in{' '}
@@ -182,7 +249,7 @@ export default function NewsletterPage() {
                     rel="noopener noreferrer"
                     className="text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    Beehiiv Settings
+                    Beehiiv Settings → Integrations → API
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </p>
@@ -197,10 +264,10 @@ export default function NewsletterPage() {
                   value={publicationId}
                   onChange={(e) => setPublicationId(e.target.value)}
                   required
-                  disabled={saving || isConnected}
+                  disabled={saving || (isConnected && !editing)}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Your publication ID from Beehiiv dashboard
+                  Your publication ID from Beehiiv dashboard (starts with <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">pub_</code>)
                 </p>
               </div>
 
@@ -225,22 +292,36 @@ export default function NewsletterPage() {
                 </div>
               )}
 
-              <Button
-                type="submit"
-                disabled={saving || isConnected}
-                className="w-full sm:w-auto"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connecting...
-                  </>
-                ) : isConnected ? (
-                  'Connected'
-                ) : (
-                  'Connect Newsletter'
+              <div className="flex gap-3">
+                <Button
+                  type="submit"
+                  disabled={saving || (isConnected && !editing)}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editing ? 'Updating...' : 'Connecting...'}
+                    </>
+                  ) : isConnected && !editing ? (
+                    'Connected'
+                  ) : editing ? (
+                    'Update Connection'
+                  ) : (
+                    'Connect Newsletter'
+                  )}
+                </Button>
+                
+                {editing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelEdit}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
                 )}
-              </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -257,12 +338,17 @@ export default function NewsletterPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span className="text-sm font-medium">Active</span>
+                  <span className="text-sm font-medium">Connected</span>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => triggerSync(user.id)}
+                  onClick={() => {
+                    const supabase = createClient()
+                    supabase.from('tenants').select('id').eq('created_by', user.id).single().then(({ data }) => {
+                      if (data) triggerSync(data.id)
+                    })
+                  }}
                   disabled={syncStatus === 'syncing'}
                 >
                   {syncStatus === 'syncing' ? (
