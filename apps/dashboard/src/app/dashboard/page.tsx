@@ -48,7 +48,7 @@ export default async function DashboardPage() {
       <div className="space-y-8">
         {/* Welcome section */}
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-slate-900">
             Welcome to Envelope AI
           </h1>
           <p className="text-lg text-slate-600">
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
           <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-white to-accent/5 shadow-lg">
             <CardHeader className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark shadow-lg">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-lg">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
                 <div>
@@ -148,33 +148,41 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <Link href="/dashboard/newsletter" className="group">
-              <div className="flex items-center gap-4 rounded-xl border-2 border-slate-200 bg-white p-5 hover:border-primary hover:bg-primary/5 transition-all cursor-pointer shadow-sm hover:shadow-md">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-dark shadow-md group-hover:shadow-lg transition-shadow">
-                  <Zap className="h-7 w-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900 text-lg">Connect Newsletter</p>
-                  <p className="text-sm text-slate-600">
-                    Link your Beehiiv account
-                  </p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-              </div>
+              <Card className="border-2 border-slate-200 hover:border-primary hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                    <Zap className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary transition-colors">
+                      Connect Newsletter
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Link your Beehiiv account
+                    </p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                </CardContent>
+              </Card>
             </Link>
 
             <Link href="/dashboard/metadata" className="group">
-              <div className="flex items-center gap-4 rounded-xl border-2 border-slate-200 bg-white p-5 hover:border-accent hover:bg-accent/5 transition-all cursor-pointer shadow-sm hover:shadow-md">
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-dark shadow-md group-hover:shadow-lg transition-shadow">
-                  <TrendingUp className="h-7 w-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900 text-lg">Optimize Metadata</p>
-                  <p className="text-sm text-slate-600">
-                    Improve discoverability
-                  </p>
-                </div>
-                <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-accent transition-colors" />
-              </div>
+              <Card className="border-2 border-slate-200 hover:border-accent hover:shadow-md transition-all cursor-pointer">
+                <CardContent className="flex items-center gap-4 p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
+                    <Sparkles className="h-6 w-6 text-accent" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-accent transition-colors">
+                      Optimize Metadata
+                    </h3>
+                    <p className="text-sm text-slate-500">
+                      Improve discoverability
+                    </p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-accent group-hover:translate-x-1 transition-all" />
+                </CardContent>
+              </Card>
             </Link>
           </CardContent>
         </Card>

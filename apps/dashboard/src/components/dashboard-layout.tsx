@@ -46,7 +46,7 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -64,12 +64,12 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-20 items-center justify-between border-b border-slate-200 px-6 bg-gradient-to-r from-primary/5 to-accent/5">
+          <div className="flex h-20 items-center justify-between border-b border-slate-200 px-6">
             <Link href="/dashboard" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-lg">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <span className="text-2xl font-bold text-slate-900">
                 Envelope AI
               </span>
             </Link>
@@ -92,7 +92,7 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
                   className={cn(
                     'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all',
                     isActive
-                      ? 'bg-gradient-to-r from-primary to-primary-dark text-white shadow-lg shadow-primary/30'
+                      ? 'bg-primary text-white shadow-lg'
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   )}
                 >
@@ -104,12 +104,10 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
           </nav>
 
           {/* User section */}
-          <div className="border-t border-slate-200 p-4 bg-slate-50">
-            <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-200">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-md">
-                <span className="text-sm font-bold text-white">
-                  {user.email?.[0].toUpperCase()}
-                </span>
+          <div className="border-t border-slate-200 p-4">
+            <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3 mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold">
+                {user.email?.[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">
@@ -117,15 +115,16 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
                 </p>
                 <p className="text-xs text-slate-500">Free Trial</p>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSignOut}
-                className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="w-full gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </aside>
@@ -133,24 +132,22 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 lg:px-8 shadow-sm">
+        <header className="flex h-20 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            <Menu className="h-6 w-6 text-slate-700" />
+            <Menu className="h-6 w-6 text-slate-600" />
           </button>
-          <div className="flex items-center gap-4 ml-auto">
-            {/* Trial status badge */}
-            <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-2 border border-amber-200 shadow-sm">
-              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-sm font-semibold text-amber-700">14 days trial</span>
-            </div>
+          <div className="flex-1" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200">
+            <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-sm font-medium text-amber-900">14 days trial</span>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+        <main className="flex-1 overflow-y-auto p-8">
           <div className="mx-auto max-w-7xl">
             {children}
           </div>
