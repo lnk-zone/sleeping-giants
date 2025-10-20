@@ -18,6 +18,7 @@
     "@nestjs/platform-fastify": "^10.3.0",
     "@sleeping-giants/data": "workspace:*",
     "@sleeping-giants/shared": "workspace:*",
+    "csv-parse": "^6.1.0",
     "fastify": "^4.25.2",
     "nestjs-pino": "^4.0.0",
     "pino": "^8.17.0",

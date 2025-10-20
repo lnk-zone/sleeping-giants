@@ -19,9 +19,13 @@ import { ISSUE_PROVIDER, InMemoryIssueProvider } from './issues/issue-provider.j
 import { SavesController } from './saves/saves.controller.js';
 import { StreaksController } from './streaks/streaks.controller.js';
 import { ReferralsController } from './referrals/referrals.controller.js';
+import { UseCasesModule } from './use-cases/use-cases.module.js';
+import { GoldenPromptsModule } from './golden-prompts/golden-prompts.module.js';
 
 @Module({
   imports: [
+    UseCasesModule,
+    GoldenPromptsModule,
     LoggerModule.forRoot({
       pinoHttp: {
         name: 'mcp-service',
